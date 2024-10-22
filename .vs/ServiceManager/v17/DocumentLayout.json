@@ -1,0 +1,102 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|c:\\users\\lenovo\\desktop\\leitor2.0\\visionservicemanager-admin\\process\\asyncprocess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|solutionrelative:process\\asyncprocess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|c:\\users\\lenovo\\desktop\\leitor2.0\\visionservicemanager-admin\\process\\asynccheckconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|solutionrelative:process\\asynccheckconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|c:\\users\\lenovo\\desktop\\leitor2.0\\visionservicemanager-admin\\process\\asyncdesconto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|solutionrelative:process\\asyncdesconto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|c:\\users\\lenovo\\desktop\\leitor2.0\\visionservicemanager-admin\\process\\incializeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|solutionrelative:process\\incializeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|c:\\users\\lenovo\\desktop\\leitor2.0\\visionservicemanager-admin\\process\\processdescontos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}|ServiceManager.csproj|solutionrelative:process\\processdescontos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AsyncProcess.cs",
+              "DocumentMoniker": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\AsyncProcess.cs",
+              "RelativeDocumentMoniker": "Process\\AsyncProcess.cs",
+              "ToolTip": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\AsyncProcess.cs",
+              "RelativeToolTip": "Process\\AsyncProcess.cs",
+              "ViewState": "AQIAAAEFAAAAAAAAAAAcwCIFAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-03T11:45:34.658Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AsyncCheckConnection.cs",
+              "DocumentMoniker": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\AsyncCheckConnection.cs",
+              "RelativeDocumentMoniker": "Process\\AsyncCheckConnection.cs",
+              "ToolTip": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\AsyncCheckConnection.cs",
+              "RelativeToolTip": "Process\\AsyncCheckConnection.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T13:36:45.127Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AsyncDesconto.cs",
+              "DocumentMoniker": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\AsyncDesconto.cs",
+              "RelativeDocumentMoniker": "Process\\AsyncDesconto.cs",
+              "ToolTip": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\AsyncDesconto.cs",
+              "RelativeToolTip": "Process\\AsyncDesconto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T13:36:44.479Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IncializeService.cs",
+              "DocumentMoniker": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\IncializeService.cs",
+              "RelativeDocumentMoniker": "Process\\IncializeService.cs",
+              "ToolTip": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\IncializeService.cs",
+              "RelativeToolTip": "Process\\IncializeService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T13:36:43.024Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ProcessDescontos.cs",
+              "DocumentMoniker": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\ProcessDescontos.cs",
+              "RelativeDocumentMoniker": "Process\\ProcessDescontos.cs",
+              "ToolTip": "C:\\Users\\LENOVO\\Desktop\\Leitor2.0\\VisionServiceManager-ADMIN\\Process\\ProcessDescontos.cs",
+              "RelativeToolTip": "Process\\ProcessDescontos.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T13:36:40.504Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

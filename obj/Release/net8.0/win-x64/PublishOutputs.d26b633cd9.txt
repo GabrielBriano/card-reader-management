@@ -1,0 +1,7 @@
+C:\Users\LENOVO\Desktop\Gerenciamento\ServiceManager.pdb
+C:\Users\LENOVO\Desktop\Gerenciamento\comerr64.dll
+C:\Users\LENOVO\Desktop\Gerenciamento\gssapi64.dll
+C:\Users\LENOVO\Desktop\Gerenciamento\k5sprt64.dll
+C:\Users\LENOVO\Desktop\Gerenciamento\krb5_64.dll
+C:\Users\LENOVO\Desktop\Gerenciamento\krbcc64.dll
+C:\Users\LENOVO\Desktop\Gerenciamento\ServiceManager.exe

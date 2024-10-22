@@ -1,0 +1,2 @@
+C:\Users\Software\Desktop\Service\ServiceManager.pdb
+C:\Users\Software\Desktop\Service\ServiceManager.exe

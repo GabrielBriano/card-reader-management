@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceManager", "ServiceManager.csproj", "{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A84EF13-5F6E-4D1D-9F64-1CFF050F17B1}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Downloads\gerenciamento.ico = ..\..\..\Downloads\gerenciamento.ico
+		gerenciamento.ico = gerenciamento.ico
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6093C4C1-6D9A-4B8C-BED2-7EC1C7EE12D0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8FF92F06-FD75-4600-B7BC-6500BEE1543C}
+	EndGlobalSection
+EndGlobal
