@@ -6,11 +6,12 @@ using ServiceManager.Class.Enum;
 namespace ServiceManager.Process
 {
     /// <summary>
-    /// Software de Gerenciamento das Leitoras
-    /// Desenvolvido por Gabriel Briano de Oliveira
-    /// para I/O Eletronica
-    /// Atualizado em 07/10/2024
+    /// Software de Gerenciamento das Leitoras / Readers Management Software 
+    /// Desenvolvido por Gabriel Briano de Oliveira / Developed by Gabriel Briano de Oliveira  
+    /// para I/O Eletronica / for I/O Eletronica  
+    /// Atualizado em 07/10/2024 / Updated on 10/07/2024
     /// </summary>
+    
     public class ProcessDescontos
     {
         private static string? pBancoLeitora = "Server=192.168.50.11;Database=leitoras;Uid=desenv;Pwd=root;";

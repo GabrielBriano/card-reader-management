@@ -24,7 +24,6 @@ namespace ServiceManager.Process
         private static bool bloqueioCartaoFesta = false;
         bool timePassed = false;
         bool acaoExecutada = false;
-        bool acc = false;
 
         private int selectCor = 0;
         int? rele = null;
@@ -79,7 +78,6 @@ namespace ServiceManager.Process
                                 leitoraConfig.Code_Leitora = reader.GetString("code_leitora");
                                 leitoraConfig.Display = reader.GetString("display1");
 
-                                // Pode ser Null
                                 leitoraConfig.Ticket_Min = reader.IsDBNull(reader.GetOrdinal("ticket_minimo")) ? (int?)0 : reader.GetInt32(reader.GetOrdinal("ticket_minimo"));
                                 leitoraConfig.Ticket_Max = reader.IsDBNull(reader.GetOrdinal("ticket_maximo")) ? (int?)0 : reader.GetInt32(reader.GetOrdinal("ticket_maximo"));
                                 leitoraConfig.Tempo_Pulso = reader.IsDBNull(reader.GetOrdinal("tempo_pulso")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("tempo_pulso"));
@@ -161,13 +159,10 @@ namespace ServiceManager.Process
                                 }
                                 else
                                 {
-                                    //query = "SELECT vip, bonus, saldo FROM tb_card WHERE NUMBER = '" + leitora.CardCode + "' AND Status = 'A'";
                                     Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | " + " Cartão " + leitora.CardCode + " - ");
                                     Console.ForegroundColor = ConsoleColor.Red;
                                     Console.Write("Cartão não encontrado\n");
                                     Console.ForegroundColor = ConsoleColor.White;
-                                    acc = true;
-                                    //Console.WriteLine($"{dataHora} - Leitora: {leitora.Code_Leitora}, Cartão: {leitora.CardCode}");
                                     TratarCartao(leitoraConfig, card, leitora, desconto);
                                 }
                                 return;
@@ -180,95 +175,6 @@ namespace ServiceManager.Process
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-            }
-        }
-
-        private async Task AtualizarRelePara0(LeitoraConfiguracaoDM leitoraConfiguracao, LeitoraDM leitora)
-        {
-            string query = "UPDATE tb_leitora SET aciona_rele = 0 WHERE code_leitora = @codeLeitora";
-
-            try
-            {
-                using (var connection = new MySqlConnection(pBancoLeitora))
-                {
-                    await connection.OpenAsync();
-
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@codeLeitora", leitora.Code_Leitora);
-
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
-
-                        if (rowsAffected > 0)
-                        {
-                            leitoraConfiguracao.Rele = 0;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao atualizar aciona_rele para 0: {ex.Message}");
-            }
-        }
-
-
-        private async Task AtualizarRelePara1(LeitoraConfiguracaoDM leitoraConfiguracao, LeitoraDM leitora)
-        {
-            string query = "UPDATE tb_leitora SET aciona_rele = 1 WHERE code_leitora = @codeLeitora";
-
-            try
-            {
-                using (var connection = new MySqlConnection(pBancoLeitora))
-                {
-                    await connection.OpenAsync();
-
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@codeLeitora", leitora.Code_Leitora);
-
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
-
-                        if (rowsAffected > 0)
-                        {
-                            leitoraConfiguracao.Rele = 1;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao atualizar aciona_rele para 1: {ex.Message}");
-            }
-        }
-
-        private async Task AtualizarRelePara2(LeitoraConfiguracaoDM leitoraConfiguracao, LeitoraDM leitora)
-        {
-            string query = "UPDATE tb_leitora SET aciona_rele = 2 WHERE code_leitora = @codeLeitora";
-
-            try
-            {
-                using (var connection = new MySqlConnection(pBancoLeitora))
-                {
-                    await connection.OpenAsync();
-
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-
-                        command.Parameters.AddWithValue("@codeLeitora", leitora.Code_Leitora);
-
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
-
-                        if (rowsAffected > 0)
-                        {
-                            leitoraConfiguracao.Rele = 1;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao atualizar aciona_rele para 1: {ex.Message}");
             }
         }
 
@@ -384,8 +290,6 @@ namespace ServiceManager.Process
             bool SemSaldo = false;
             bool isVip = false;
             bool temDesc = false;
-            bool cardS = false;
-            bool cardB = false;
 
             int corLed;
             double descontoAgora = 0.00;
@@ -486,7 +390,6 @@ namespace ServiceManager.Process
                 }
                 else if (soma >= precoapagar)
                 {
-                    // Usar o saldo parcial e completar com o bônus
                     decimal? valorRestante = precoapagar - card.Saldo;
                     card.Bonus = card.Bonus - valorRestante;
                     card.Saldo = 0;
@@ -505,12 +408,11 @@ namespace ServiceManager.Process
 
             bool acaoExecutada = await ObterDataFesta();
 
-            // Service card
+
             if (card.Status == "S")
             {
                 corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                 corLed += (int)leitora.Tempo_Aciona_Led;
-                await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                 await AtualizarSaldo(card);
 
@@ -538,7 +440,6 @@ namespace ServiceManager.Process
                     msgDisplay2 = "  Saldo: " + card.Saldo;
                     corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                     corLed += (int)leitora.Tempo_Alterna_Led;
-                    await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                     await AtualizarLeitora(leitora.Code_Leitora, msgDisplay, msgDisplay2, corLed, StatusCode.A);
 
@@ -563,7 +464,6 @@ namespace ServiceManager.Process
 
                         corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                         corLed += (int)leitora.Tempo_Aciona_Led;
-                        await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                         await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Vip ?? 0m);
 
@@ -594,7 +494,6 @@ namespace ServiceManager.Process
                     {
                         corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                         corLed += (int)leitora.Tempo_Aciona_Led;
-                        await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                         await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Vip ?? 0m);
 
@@ -627,7 +526,6 @@ namespace ServiceManager.Process
                         {
                             corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-                            await AtualizarRelePara2(leitoraConfiguracao, leitora);
 
                             await AtualizarSaldo(card);
 
@@ -658,8 +556,6 @@ namespace ServiceManager.Process
                             msgDisplay = leitora.Display1;
                             msgDisplay2 = "Nao Aceita Bonus";
 
-                            await AtualizarRelePara0(leitoraConfiguracao, leitora);
-
                             corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
 
@@ -685,7 +581,6 @@ namespace ServiceManager.Process
 
                         corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                         corLed += (int)leitora.Tempo_Aciona_Led;
-                        await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                         await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Normal ?? 0m);
 
@@ -716,7 +611,6 @@ namespace ServiceManager.Process
                     {
                         corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                         corLed += (int)leitora.Tempo_Aciona_Led;
-                        await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                         await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Normal ?? 0m);
 
@@ -750,7 +644,6 @@ namespace ServiceManager.Process
                             card.Bonus += card.Saldo;
                             corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-                            await AtualizarRelePara2(leitoraConfiguracao, leitora);
 
                             await AtualizarSaldo(card);
 
@@ -779,8 +672,6 @@ namespace ServiceManager.Process
                         {
                             msgDisplay = leitora.Display1;
                             msgDisplay2 = "Nao Aceita Bonus";
-
-                            await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                             corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
@@ -811,7 +702,6 @@ namespace ServiceManager.Process
                         msgDisplay2 = "  Saldo: " + card.Saldo;
                         corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                         corLed += (int)leitora.Tempo_Alterna_Led;
-                        await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                         await AtualizarLeitora(leitora.Code_Leitora, msgDisplay, msgDisplay2, corLed, StatusCode.A);
 
@@ -836,7 +726,6 @@ namespace ServiceManager.Process
 
                             corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-                            await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                             await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Vip ?? 0m);
 
@@ -867,7 +756,6 @@ namespace ServiceManager.Process
                         {
                             corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-                            await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                             await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Vip ?? 0m);
 
@@ -900,7 +788,6 @@ namespace ServiceManager.Process
                             {
                                 corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
                                 corLed += (int)leitora.Tempo_Aciona_Led;
-                                await AtualizarRelePara2(leitoraConfiguracao, leitora);
 
                                 await AtualizarSaldo(card);
 
@@ -931,8 +818,6 @@ namespace ServiceManager.Process
                                 msgDisplay = leitora.Display1;
                                 msgDisplay2 = "Nao Aceita Bonus";
 
-                                await AtualizarRelePara0(leitoraConfiguracao, leitora);
-
                                 corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                                 corLed += (int)leitora.Tempo_Aciona_Led;
 
@@ -958,7 +843,6 @@ namespace ServiceManager.Process
 
                             corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-                            await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                             await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Normal ?? 0m);
 
@@ -989,7 +873,6 @@ namespace ServiceManager.Process
                         {
                             corLed = (int)(Led)Convert.ToInt16(Led.Cartao_Aceito) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-                            await AtualizarRelePara1(leitoraConfiguracao, leitora);
 
                             await AtualizarTotalGasto(card, leitoraConfiguracao.Preco_Normal ?? 0m);
 
@@ -1023,7 +906,6 @@ namespace ServiceManager.Process
                                 card.Bonus += card.Saldo;
                                 corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
                                 corLed += (int)leitora.Tempo_Aciona_Led;
-                                await AtualizarRelePara2(leitoraConfiguracao, leitora);
 
                                 await AtualizarSaldo(card);
 
@@ -1053,8 +935,6 @@ namespace ServiceManager.Process
                                 msgDisplay = leitora.Display1;
                                 msgDisplay2 = "Nao Aceita Bonus";
 
-                                await AtualizarRelePara0(leitoraConfiguracao, leitora);
-
                                 corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                                 corLed += (int)leitora.Tempo_Aciona_Led;
 
@@ -1083,7 +963,6 @@ namespace ServiceManager.Process
                     {
                         corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                         corLed += (int)leitora.Tempo_Aciona_Led;
-                        await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                         await AtualizarSaldo(card);
 
@@ -1093,7 +972,7 @@ namespace ServiceManager.Process
                         await GerarHistorico(leitoraConfiguracao, card, leitora, isVip);
 
                         msgDisplay = leitora.Display1;
-                        msgDisplay2 = " Saldo Invalido "; // Saldo insuficiente
+                        msgDisplay2 = " Saldo Invalido ";
 
                         await AtualizarLeitora(leitora.Code_Leitora, msgDisplay, msgDisplay2, corLed, StatusCode.A);
 
@@ -1109,8 +988,6 @@ namespace ServiceManager.Process
                             msgDisplay2 = "Espere 2 Minutos";
                             corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
-
-                            await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                             Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | Cartão " + leitora.CardCode + " - ");
                             Console.ForegroundColor = ConsoleColor.Red;
@@ -1139,8 +1016,6 @@ namespace ServiceManager.Process
                         Console.Write("Cartão Festa\n");
                         Console.ForegroundColor = ConsoleColor.White;
 
-                        await AtualizarRelePara2(leitoraConfiguracao, leitora);
-
                         await AtualizarLeitora(leitora.Code_Leitora, msgDisplay, msgDisplay2, corLed, StatusCode.A);
 
                         await Aguardar((int)leitora.Tempo_Aciona_Led);
@@ -1158,8 +1033,6 @@ namespace ServiceManager.Process
                     msgDisplay2 = "Nao Aceita Festa";
                     corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                     corLed += (int)leitora.Tempo_Aciona_Led;
-
-                    await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                     Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | Cartão " + leitora.CardCode + " - ");
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -1179,7 +1052,6 @@ namespace ServiceManager.Process
             {
                 corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                 corLed += (int)leitora.Tempo_Aciona_Led;
-                await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                 await AtualizarSaldo(card);
 
@@ -1204,7 +1076,6 @@ namespace ServiceManager.Process
             {
                 corLed = (int)(Led)Convert.ToInt16(Led.Maq_Normal) * 10;
                 corLed += (int)leitora.Tempo_Aciona_Led;
-                await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                 await AtualizarSaldo(card);
 
@@ -1229,7 +1100,6 @@ namespace ServiceManager.Process
             {
                 corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                 corLed += (int)leitora.Tempo_Aciona_Led;
-                await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                 await AtualizarSaldo(card);
 
@@ -1255,7 +1125,6 @@ namespace ServiceManager.Process
                 msgDisplay2 = " Nao Encontrado ";
                 corLed = (int)(Led)Convert.ToInt16(Led.NaoPisca) * 0;
                 corLed += (int)leitora.Tempo_Alterna_Led;
-                await AtualizarRelePara0(leitoraConfiguracao, leitora);
 
                 await AtualizarLeitora(leitora.Code_Leitora, msgDisplay, msgDisplay2, corLed, StatusCode.A);
 
@@ -1313,50 +1182,6 @@ namespace ServiceManager.Process
             return true;
         }
 
-
-        /*
-        private async Task VerificaDataFesta(LeitoraConfiguracaoDM leitoraConfig, LeitoraDM code_leitora)
-        {
-            try
-            {
-                DateTime dMinutes;
-                string query = "SELECT hora FROM tb_leitora WHERE code_leitora = '" + code_leitora + "'";
-
-                using (var connection = new MySqlConnection(pBancoLeitora))
-                {
-                    await connection.OpenAsync();
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@code_leitora", code_leitora);
-
-                        using (MySqlDataReader reader = await command.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                DateTime horaLeitora = reader.GetDateTime("hora");
-
-                                if (lastCardReadTime.HasValue && (DateTime.Now - lastCardReadTime.Value).TotalMinutes < 2)
-                                {
-                                    timePassed = false;
-                                }
-
-                                lastCardReadTime = DateTime.Now;
-
-                            }
-                            else
-                            {
-                                timePassed = true;
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                Console.WriteLine("Nenhum dado foi encontrado!");
-            }
-        }
-        */
         public async Task CriaHistorico(LeitoraDM leitora, decimal? saldoAtual, decimal? bonusAtual, decimal? saldoPago, decimal? bonusPago)
         {
             string query1 = "SELECT id FROM tb_machine_settings WHERE code_leitora = @codeLeitora";
@@ -1490,7 +1315,6 @@ namespace ServiceManager.Process
 
             try
             {
-                //Console.WriteLine("Gerando histórico...");
                 using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
@@ -1500,15 +1324,6 @@ namespace ServiceManager.Process
                     string bonusValue = card.Bonus.Value.ToString(CultureInfo.InvariantCulture);
                     string precoPago = "";
 
-                    //Console.WriteLine("É vip?");
-                    /*if (isVip)
-                    {
-                        Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | Preço pago: R$ " + leitoraConfiguracao.Preco_Vip + " | Cartão " + leitora.CardCode + "\nSaldo " + card.Saldo + " | Bonus " + card.Bonus + " - ");
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write("Sucesso\n");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        precoPago = leitoraConfiguracao.Preco_Vip.Value.ToString(CultureInfo.InvariantCulture);
-                    }*/
                     if (card.Status == "S")
                     {
                         // Console.WriteLine("É cartão de servico?");
@@ -1525,16 +1340,6 @@ namespace ServiceManager.Process
                         Console.Write("Cartão em estoque\n");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
-                    /*
-                    else if (card.Status == "FA")
-                    {
-                        //Console.WriteLine("É cartão de festa?");
-                        Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | Cartão " + leitora.CardCode + " - ");
-                        Console.ForegroundColor = ConsoleColor.Magenta;
-                        Console.Write("Cartão festa\n");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    */
                     else if (card.Status == "FE")
                     {
                         //Console.WriteLine("É cartão de festa em estoque?");
@@ -1549,14 +1354,6 @@ namespace ServiceManager.Process
                         Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | Cartão " + leitora.CardCode + " - ");
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("Cartão Inativo\n");
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    else if (acc == true)
-                    {
-
-                        Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " Cartão " + leitora.CardCode + " - ");
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.Write("Cartão não registrado\n");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                     else
@@ -1602,11 +1399,9 @@ namespace ServiceManager.Process
             }
             catch (Exception ex)
             {
-                //Console.WriteLine($"Erro ao inserir dados: {ex.Message}");
+                Console.WriteLine($"Erro ao inserir dados: {ex.Message}");
             }
         }
-
-
 
         private async Task GerarLog(string LogMsg)
         {
@@ -1614,7 +1409,6 @@ namespace ServiceManager.Process
 
             try
             {
-                //Console.WriteLine("Gerando log...");
                 using (var connection = new MySqlConnection(pBancoLeitora))
                 {
 
@@ -1627,7 +1421,6 @@ namespace ServiceManager.Process
                         await command.ExecuteNonQueryAsync();
                     }
                 }
-                //Console.WriteLine("Log gerada");
 
             }
             catch (Exception ex)
@@ -1641,14 +1434,12 @@ namespace ServiceManager.Process
             string query = "";
             try
             {
-                //Console.WriteLine("Atualizando saldo ...");
                 using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
                     decimal saldoValue = card.Saldo.Value;
                     saldoValue = decimal.Parse(saldoValue.ToString(CultureInfo.InvariantCulture).Replace(',', '.'), CultureInfo.InvariantCulture);
-                    //Console.WriteLine("Verificando saldo ...");
                     // Tratamento para Bonus
                     decimal bonusValue = card.Bonus.Value;
                     bonusValue = decimal.Parse(bonusValue.ToString(CultureInfo.InvariantCulture).Replace(',', '.'), CultureInfo.InvariantCulture);
@@ -1661,7 +1452,6 @@ namespace ServiceManager.Process
                         await command.ExecuteNonQueryAsync();
                     }
                 }
-                //Console.WriteLine("Pronto, verificado!!");
 
             }
             catch (Exception ex)
@@ -1748,7 +1538,6 @@ namespace ServiceManager.Process
                     }
 
                 }
-                //Console.WriteLine("Leitora atualizada!");
             }
             catch (Exception ex)
             {
@@ -1764,7 +1553,6 @@ namespace ServiceManager.Process
 
         public async Task ServicoCheckUpdate()
         {
-            //Console.WriteLine("Verificando se há atualização...");
             string query = "SELECT code_leitora FROM tb_machine_settings WHERE checkupdate = 1";
 
             try
@@ -1790,14 +1578,6 @@ namespace ServiceManager.Process
                                 }
                             }
                         }
-
-                        //Monitoramento Banco Leitora ao mudar informações do machine
-                        IncializeService service = new IncializeService();
-
-                        await service.LoopAtiva();
-
-                        await Task.Delay(1000);
-
                     }
                 }
             }
@@ -1813,7 +1593,6 @@ namespace ServiceManager.Process
 
             try
             {
-                //Console.WriteLine("Retornando a verificação do cartão...");
                 using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
@@ -1822,7 +1601,6 @@ namespace ServiceManager.Process
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
-                        //Console.WriteLine("Processando...");
                         await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -1831,7 +1609,6 @@ namespace ServiceManager.Process
             {
                 Console.WriteLine($"Erro ao inserir dados: {ex.Message}");
             }
-            //Console.WriteLine("Retorno executado!");
         }
 
         private async Task ContrucaoDaLeitoraAtualizada(string code_leitora)
@@ -1841,7 +1618,6 @@ namespace ServiceManager.Process
 
             try
             {
-                //Console.WriteLine("Construindo padrões da leitora..");
                 using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
@@ -1855,7 +1631,6 @@ namespace ServiceManager.Process
                         {
                             if (await reader.ReadAsync())
                             {
-                                //Console.WriteLine("Atualizando o tb_leitora ...");
                                 leitoraMensagem.Mensagem_Sucesso = reader.IsDBNull(reader.GetOrdinal("mensagem_sucesso")) ? (string?)"" : reader.GetString(reader.GetOrdinal("mensagem_sucesso"));
                                 leitoraMensagem.Mensagem_Aguarde = reader.IsDBNull(reader.GetOrdinal("mensagem_aguarde")) ? (string?)"" : reader.GetString(reader.GetOrdinal("mensagem_aguarde"));
                                 leitoraMensagem.Mensagem_Erro_Saldo = reader.IsDBNull(reader.GetOrdinal("mensagem_erro_saldo")) ? (string?)"" : reader.GetString(reader.GetOrdinal("mensagem_erro_saldo"));
@@ -1870,7 +1645,6 @@ namespace ServiceManager.Process
                         }
                     }
 
-                    //Console.WriteLine("Verificando a coluna 'codigo_cartão' ...");
                     query =
                         "SELECT * FROM tb_machine_settings " +
                         "LEFT JOIN tb_parametros_maquinas ON " +
@@ -1883,14 +1657,12 @@ namespace ServiceManager.Process
                         {
                             if (await reader.ReadAsync())
                             {
-                                //Console.WriteLine("Processando...");
                                 LeitoraConfiguracaoDM leitoraConfig = new LeitoraConfiguracaoDM();
                                 leitoraConfig.Code_Leitora = reader.GetString("code_leitora");
                                 leitoraConfig.Display = reader.GetString("display1");
                                 leitoraConfig.Ticket_Tipo = reader.GetString("tipo_ticket");
                                 leitoraConfig.Nome_Brinquedo = reader.GetString("nome_brinquedo");
 
-                                // Pode ser Null
                                 leitoraConfig.Mensagem_Sucesso = leitoraMensagem.Mensagem_Sucesso;
                                 if (!reader.IsDBNull(reader.GetOrdinal("mensagem_sucesso")))
                                 {
@@ -1971,12 +1743,8 @@ namespace ServiceManager.Process
 
                                 await UpdateMaquina(leitoraConfig, code_leitora);
 
-
-
                             }
-                            //Console.WriteLine("Padroes estabelecidos!");
                             retorno = true;
-
 
                         }
                     }
@@ -2003,7 +1771,6 @@ namespace ServiceManager.Process
                     await connection.OpenAsync();
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
-                        //Console.WriteLine("Processando...");
                         using (MySqlDataReader reader = await command.ExecuteReaderAsync())
                         {
                             if (await reader.ReadAsync())
@@ -2048,7 +1815,7 @@ namespace ServiceManager.Process
                             query += "display2 = 'R$" + leitoraConfig.Preco_Normal + " VIP" + leitoraConfig.Preco_Vip + "',";
                         }
 
-                        // Continuação da construção da query...
+                        // Continuação da query...
                         query += "led_base = " + corLed + ","
                         + "ticket_min = " + leitoraConfig.Ticket_Min + ","
                         + "ticket_max = " + leitoraConfig.Ticket_Max + ","
@@ -2069,7 +1836,6 @@ namespace ServiceManager.Process
                     }
                     else
                     {
-                        //Console.WriteLine("[ Maquina: " + code_leitora + " - Atualizada ]");
                         query = "UPDATE tb_leitora SET "
                         + "code_leitora = '" + leitoraConfig.Code_Leitora + "',"
                         + "display1 = '" + leitoraConfig.Display + "',";
@@ -2087,7 +1853,7 @@ namespace ServiceManager.Process
                             query += "display2 = 'R$" + leitoraConfig.Preco_Normal + " VIP" + leitoraConfig.Preco_Vip + "',";
                         }
 
-                        // Continuação da construção da query...
+                        // Continuação da query...
                         query += "led_base = " + corLed + ","
                         + "ticket_min = " + leitoraConfig.Ticket_Min + ","
                         + "ticket_max = " + leitoraConfig.Ticket_Max + ","

@@ -27,9 +27,9 @@ namespace ServiceManager.Process
             AsyncDesconto asyncDesconto = new AsyncDesconto();
             AsyncCheckConnection asyncCheckProcess = new AsyncCheckConnection();
             AsyncProcess asyncProcess = new AsyncProcess();
-            if (LimpezaDaTabela()) // Método para Limpar a Tabela do banco de Leitora 
+            if (LimpezaDaTabela()) 
             {
-                if (ContrucaoDaTabela())// Método para Construir as Leitoras no banco de dados
+                if (ContrucaoDaTabela())
                 {
                     ColetarDescontos();
 
@@ -42,7 +42,7 @@ namespace ServiceManager.Process
                     asyncDesconto.ServicoDesconto();
                     Console.WriteLine("Serviço de Verificação de Desconto Iniciado...");
 
-                    StartCheckService(); // Inicialização do Serviço de verificação
+                    StartCheckService();
                 }
             }
             else
@@ -61,7 +61,7 @@ namespace ServiceManager.Process
                         string query = "SELECT * FROM tb_leitora WHERE status = @status AND codigo_cartao IS NOT NULL LIMIT 1";
                         using (var command = new MySqlCommand(query, connection))
                         {
-                            command.Parameters.AddWithValue("@status", StatusCode.W); // Evita SQL Injection
+                            command.Parameters.AddWithValue("@status", StatusCode.W); // Para evitar SQL Injection
 
                             using (var reader = command.ExecuteReader())
                             {
@@ -101,7 +101,6 @@ namespace ServiceManager.Process
                                         };
                                     }
 
-                                    // Atualizar o Status para processando e arranca o Codigo do cartão
                                     if (AtualizarLeitoraAguarde(leitora.Code_Leitora))
                                     {
                                         AsyncProcess asyncProcess = new AsyncProcess();
@@ -111,8 +110,7 @@ namespace ServiceManager.Process
                             }
                         }
                     }
-                    // Aguarda um intervalo antes de iniciar a próxima iteração para evitar sobrecarga do banco
-                    Task.Delay(4).Wait();
+                    Task.Delay(1000).Wait();
                 }
                 catch (Exception ex)
                 {
@@ -233,7 +231,6 @@ namespace ServiceManager.Process
                             leitoraConfig.Ticket_Tipo = reader.GetString("tipo_ticket");
                             leitoraConfig.Nome_Brinquedo = reader.GetString("nome_brinquedo");
 
-                            // Pode ser Null
                             leitoraConfig.Mensagem_Sucesso = leitoraMensagem.Mensagem_Sucesso;
                             if (!reader.IsDBNull(reader.GetOrdinal("mensagem_sucesso")))
                             {
@@ -343,10 +340,8 @@ namespace ServiceManager.Process
 
                 int corLed = leitoraConfig.Cor_Led * 10 + leitoraConfig.Tempo_Alterna_Led;
 
-                // Defina os valores permitidos para tipo_ticket
-                string[] validTicketTypes = { "M", "N", "P", "V" }; // Adicione todos os valores permitidos aqui
+                string[] validTicketTypes = { "M", "N", "P", "V" }; 
 
-                // Verifique se o valor de Ticket_Tipo é válido
                 if (leitoraConfig.Ticket_Tipo.Length == 1 && !Array.Exists(validTicketTypes, element => element == leitoraConfig.Ticket_Tipo[0].ToString()))
                 {
                     Console.WriteLine("Valor de tipo_ticket inválido: " + leitoraConfig.Ticket_Tipo);
@@ -379,7 +374,7 @@ namespace ServiceManager.Process
                     command.Parameters.AddWithValue("@led_base", corLed);
                     command.Parameters.AddWithValue("@ticket_min", leitoraConfig.Ticket_Min);
                     command.Parameters.AddWithValue("@ticket_max", leitoraConfig.Ticket_Max);
-                    command.Parameters.AddWithValue("@tipo_ticket", leitoraConfig.Ticket_Tipo); // valor char
+                    command.Parameters.AddWithValue("@tipo_ticket", leitoraConfig.Ticket_Tipo); // char
                     command.Parameters.AddWithValue("@checkleitora", 1);
                     command.Parameters.AddWithValue("@aceita_ticket", leitoraConfig.Aceita_Ticket);
                     command.Parameters.AddWithValue("@mensagem_sucesso", leitoraConfig.Mensagem_Sucesso);
@@ -413,121 +408,6 @@ namespace ServiceManager.Process
             }
         }
 
-        public bool AtualizaColAtiva()
-        {
-            string query = "";
-            bool retorno = false;
-            try
-            {
-                using (var connectionVision = new MySqlConnection(pBancoVision))
-                {
-                    connectionVision.Open();
-
-                    query = "SELECT code_leitora, ativa, display1, cor_led, tempo_alterna_led, preco_normal, preco_vip FROM tb_machine_settings";
-                    var leitoraConfigs = new Dictionary<string, (string ativaValue, string display1, int corLed, int tempoAlternaLed, decimal precoNormal, decimal precoVip)>(); // Dicionário para mapear code_leitora para os valores
-
-                    using (var commandVision = new MySqlCommand(query, connectionVision))
-                    {
-                        using (var reader = commandVision.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string codeLeitora = reader.GetString("code_leitora");
-                                bool bitValue = reader.GetBoolean("ativa");
-                                string ativaValue = bitValue ? "1" : "0"; 
-                                string display1 = reader.GetString("display1");
-                                int corLed = reader.GetInt16("cor_led");
-                                int tempoAlternaLed = reader.GetInt16("tempo_alterna_led");
-                                decimal precoNormal = reader.GetDecimal("preco_normal");
-                                decimal precoVip = reader.GetDecimal("preco_vip");
-
-                                leitoraConfigs[codeLeitora] = (ativaValue, display1, corLed, tempoAlternaLed, precoNormal, precoVip);
-                            }
-                        }
-                    }
-                    System.Threading.Thread.Sleep(10000);
-                    using (var connectionLeitora = new MySqlConnection(pBancoLeitora))
-                    {
-                        connectionLeitora.Open();
-
-                        foreach (var config in leitoraConfigs)
-                        {
-                            query = "SELECT led_base FROM tb_leitora WHERE code_leitora = @code_leitora";
-                            uint ledBaseAtual = 0; 
-
-                            using (var commandLeitora = new MySqlCommand(query, connectionLeitora))
-                            {
-                                commandLeitora.Parameters.AddWithValue("@code_leitora", config.Key);
-
-                                using (var reader = commandLeitora.ExecuteReader())
-                                {
-                                    if (reader.Read())
-                                    {
-                                        ledBaseAtual = reader.GetUInt32("led_base"); 
-                                    }
-                                }
-                            }
-
-                            // Converter led_base para string para manipular os dígitos
-                            string ledBaseStr = ledBaseAtual.ToString().PadLeft(2, '0'); // Garantir ao menos 2 dígitos
-
-                            // Verificar se tempo_alterna_led tem pelo menos dois dígitos
-                            string tempoAlternaLedStr = config.Value.tempoAlternaLed.ToString().PadLeft(2, '0');
-                            char segundoDigitoTempoAlternaLed = tempoAlternaLedStr[1]; // Pegar o segundo dígito de tempo_alterna_led
-
-                            // Verificar se led_base tem pelo menos dois dígitos
-                            if (ledBaseStr.Length >= 2)
-                            {
-                                // Substituir o primeiro dígito de led_base por cor_led e o segundo pelo segundo dígito de tempo_alterna_led
-                                string novoLedBaseStr = config.Value.corLed.ToString() + segundoDigitoTempoAlternaLed + ledBaseStr.Substring(2);
-
-                                // Converter o novo led_base de volta para número (UInt32)
-                                uint novoLedBase = uint.Parse(novoLedBaseStr);
-
-                                // Criar a string para display2 usando os valores de preco_normal e preco_vip
-                                string display2 = $"R${config.Value.precoNormal} VIP{config.Value.precoVip}";
-
-                                // Atualizar o registro em tb_leitora com o novo led_base e display2
-                                query = "UPDATE tb_leitora SET ativa = @ativa, display1 = @display1, led_base = @led_base, display2 = @display2 WHERE code_leitora = @code_leitora";
-
-                                using (var commandLeitoraUpdate = new MySqlCommand(query, connectionLeitora))
-                                {
-                                    commandLeitoraUpdate.Parameters.AddWithValue("@ativa", config.Value.ativaValue);
-                                    commandLeitoraUpdate.Parameters.AddWithValue("@display1", config.Value.display1);
-                                    commandLeitoraUpdate.Parameters.AddWithValue("@led_base", novoLedBase); // Usando o novo valor de led_base
-                                    commandLeitoraUpdate.Parameters.AddWithValue("@display2", display2); // Usando a string montada para display2
-                                    commandLeitoraUpdate.Parameters.AddWithValue("@code_leitora", config.Key);
-
-                                    commandLeitoraUpdate.ExecuteNonQuery();
-                                }
-                            }
-                        }
-                    }
-                }
-                retorno = true; // Indica que a operação foi bem-sucedida
-            }
-            catch (Exception ex)
-            {
-                // Tratar exceções se necessário
-                Console.WriteLine("Erro: " + ex.Message);
-            }
-            return retorno; // Retorna o resultado da operação
-        }
-
-
-
-
-        public async Task LoopAtiva()
-        {
-            while (true)
-            {
-                bool sucesso = AtualizaColAtiva();  
-
-                await Task.Delay(1000);  
-            }
-        }
-
-
         private void GerarLog(string LogMsg)
         {
             string query = "";
@@ -551,7 +431,7 @@ namespace ServiceManager.Process
             }
             catch (Exception ex)
             {
-                //Console.WriteLine($"Erro ao inserir dados: {ex.Message}");
+                Console.WriteLine($"Erro ao inserir dados: {ex.Message}");
             }
         }
 

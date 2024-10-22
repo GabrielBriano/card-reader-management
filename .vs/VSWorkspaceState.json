@@ -1,9 +1,12 @@
 {
   "ExpandedNodes": [
     "",
+    "\\bin",
+    "\\bin\\Debug\\net8.0",
     "\\Class",
+    "\\Class\\Enum",
     "\\Process"
   ],
-  "SelectedNode": "\\Process\\AsyncProcess.cs",
+  "SelectedNode": "\\Process\\ProcessDescontos.cs",
   "PreviewInSolutionExplorer": false
 }

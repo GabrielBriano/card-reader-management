@@ -37,7 +37,6 @@
         public int Tempo_Alterna_Led { get; set; }
         public int Tempo_Aciona_Led { get; set; }
 
-        // descontos
         public short TemDesc { get; set; }
         public int? desc1 { get; set; }
         public string? PeriodoDesc1_Inicio { get; set; }

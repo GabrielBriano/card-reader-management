@@ -42,7 +42,6 @@ namespace ServiceManager.Class.DM
         public decimal? Preco_Vip { get; set; }
         public short? Ativa { get;  set; }
 
-        // descontos
         public short TemDesc { get; set; }
         public int? desc1 { get; set; }
         public string? PeriodoDesc1_Inicio { get; set; }
