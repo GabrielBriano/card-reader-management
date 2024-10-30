@@ -13,40 +13,36 @@ using System.Reflection.PortableExecutable;
 
 namespace ServiceManager.Process
 {
-
-
     public class AsyncProcess
     {
-        private string? pDbLeitoras = "Server=192.168.50.11;Database=leitoras;Uid=desenv;Pwd=root;";
-        private string? pDbVision = "Server=192.168.50.11;Database=visionbd;Uid=desenv;Pwd=root;";
+        private string? pBancoLeitora = "Server=192.168.50.11;Database=leitoras;Uid=desenv;Pwd=root;";
+        private string? pBancoVision = "Server=192.168.50.11;Database=visionbd;Uid=desenv;Pwd=root;";
 
-        private int selectColor = 0;
-        private decimal vipValue = 0;
-        private DateTime dateParty;
-        private DateTime startHour;
-        private DateTime endHour;
-        private DateTime? lastCardReadTime = null;
+        private int selecionaCor = 0;
+        private decimal valorVip = 0;
+        private DateTime dataFesta;
+        private DateTime horaIn;
+        private DateTime horaFnl;
 
-        bool actionTaken = false;
+        bool acaoExecutada = false;
         
         decimal? remBonus = 0;
         decimal vipVl = 0;
 
         string crd = "";
         string ms1 = "";
-        string displayMessage = "";
+        string mensagemDisplay = "";
 
-        public async Task Transacao(LeitoraDM leitora, DescontoDM desconto, int maxTentativas = 1, int tentativaAtual = 1)
+        public async Task Transaction(LeitoraDM leitora, DescontoDM desconto)
         {
 
-            DateTime nwTime = DateTime.Now;
-            string dataHora = nwTime.ToString("dd/MM/yyyy HH:mm:ss");
+            DateTime agora = DateTime.Now;
+            string dataHora = agora.ToString("dd/MM/yyyy HH:mm:ss");
             string query = "";
             string msgDisplay = "";
             string msgDisplay2 = "";
-            bool valid1 = false;
-            bool valid2 = false;
-            int timer = 1;
+            bool valido = false;
+            int tempoEsp = 5;
 
             CardDM card = new CardDM();
             LeitoraConfiguracaoDM leitoraConfig = new LeitoraConfiguracaoDM();
@@ -59,7 +55,7 @@ namespace ServiceManager.Process
                     "tb_machine_settings.parametrosid = tb_parametros_maquinas.id " +
                     "WHERE code_leitora = '" + leitora.Code_Leitora + "'";
 
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     connection.Open();
                     using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -92,7 +88,7 @@ namespace ServiceManager.Process
                                 int digitosPrecoVip = precoVipStr.Split('.')[0].Length;
 
                                 leitoraConfig.Cor_Led = reader.GetInt16("cor_led");
-                                selectColor = leitoraConfig.Cor_Led;
+                                selecionaCor = leitoraConfig.Cor_Led;
                                 leitoraConfig.Aceita_Ticket = reader.GetInt16("aceita_ticket");
                                 leitoraConfig.Maquina_Brinde = reader.GetInt16("maquina_brinde");
                                 leitoraConfig.Aceita_Bonus = reader.GetInt16("aceita_bonus");
@@ -115,11 +111,11 @@ namespace ServiceManager.Process
                                 }
 
 
-                                valid1 = true;
+                                valido = true;
                             }
                             else
                             {
-                                msgDisplay = "Erro na leitora";
+                                msgDisplay = "Reader error";
                             }
                         }
                     }
@@ -145,19 +141,11 @@ namespace ServiceManager.Process
                             }
                             else
                             {
-                                if (tentativaAtual < maxTentativas)
-                                {
-                                    Console.WriteLine(dataHora + " - " + "Cartão não encontrado. Tentativa " + tentativaAtual + " de " + maxTentativas);
-                                    await Transacao(leitora, desconto, maxTentativas, tentativaAtual + 1);
-                                }
-                                else
-                                {
-                                    Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | " + " Cartão " + leitora.CardCode + " - ");
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.Write("Cartão não encontrado\n");
-                                    Console.ForegroundColor = ConsoleColor.White;
-                                    TratarCartao(leitoraConfig, card, leitora, desconto);
-                                }
+                                Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | " + " Cartão " + leitora.CardCode + " - ");
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Write("Cartão não encontrado\n");
+                                Console.ForegroundColor = ConsoleColor.White;
+                                TratarCartao(leitoraConfig, card, leitora, desconto);
                                 return;
                             }
                         }
@@ -178,7 +166,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -209,12 +197,12 @@ namespace ServiceManager.Process
         private async Task<bool> ObterDataFesta()
         {
             string query = "SELECT party_date, start_hour, end_hour, display_message FROM tb_party";
-            bool actionTaken = false;
+            bool acaoExecutada = false;
             DateTime dataAtual = DateTime.Now;
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -224,17 +212,17 @@ namespace ServiceManager.Process
                         {
                             while (await reader.ReadAsync())
                             {
-                                DateTime dateParty = reader.GetDateTime(reader.GetOrdinal("party_date"));
-                                DateTime startHour = reader.GetDateTime(reader.GetOrdinal("start_hour"));
-                                DateTime endHour = reader.GetDateTime(reader.GetOrdinal("end_hour"));
-                                displayMessage = reader.IsDBNull(reader.GetOrdinal("display_message")) ? (String?)null : reader.GetString(reader.GetOrdinal("display_message"));
+                                DateTime dataFesta = reader.GetDateTime(reader.GetOrdinal("party_date"));
+                                DateTime horaIn = reader.GetDateTime(reader.GetOrdinal("start_hour"));
+                                DateTime horaFnl = reader.GetDateTime(reader.GetOrdinal("end_hour"));
+                                mensagemDisplay = reader.IsDBNull(reader.GetOrdinal("display_message")) ? (String?)null : reader.GetString(reader.GetOrdinal("display_message"));
 
 
 
-                                if (dateParty.Date == dataAtual.Date &&
-                                    DateTime.Now >= startHour && DateTime.Now <= endHour)
+                                if (dataFesta.Date == dataAtual.Date &&
+                                    DateTime.Now >= horaIn && DateTime.Now <= horaFnl)
                                 {
-                                    actionTaken = true;
+                                    acaoExecutada = true;
                                     break;
                                 }
                             }
@@ -247,7 +235,7 @@ namespace ServiceManager.Process
                 Console.WriteLine($"Erro ao obter as datas da festa: {ex.Message}");
             }
 
-            return actionTaken;
+            return acaoExecutada;
         }
 
 
@@ -257,7 +245,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -280,20 +268,20 @@ namespace ServiceManager.Process
         // Metodo para Validar o Cartão e executar a leitura e descontos do cartão
         private async void TratarCartao(LeitoraConfiguracaoDM leitoraConfiguracao, CardDM card, LeitoraDM leitora, DescontoDM desconto)
         {
-            bool SemSaldo = false;
-            bool isVip = false;
-            bool temDesc = false;
-
-            int corLed;
-            double descontoAgora = 0.00;
-
             string msgDisplay;
             string msgDisplay2;
             string log = "";
 
+            int corLed;
+            double descontoAgora = 0.00;
+
             decimal? precoapagar;
             decimal? cardSaldo;
             decimal? soma;
+
+            bool SemSaldo = false;
+            bool isVip = false;
+            bool temDesc = false;
 
             DateTime agora = DateTime.Now;
             string dataHora = agora.ToString("dd/MM/yyyy HH:mm:ss");
@@ -399,7 +387,7 @@ namespace ServiceManager.Process
                 await AtualizaVip(leitoraConfiguracao, leitora);
             }
 
-            bool actionTaken = await ObterDataFesta();
+            bool acaoExecutada = await ObterDataFesta();
 
 
             if (card.Status == "S")
@@ -515,7 +503,7 @@ namespace ServiceManager.Process
                     }
                     else
                     {
-                        if (selectColor != 3)
+                        if (selecionaCor != 3)
                         {
                             corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
                             corLed += (int)leitora.Tempo_Aciona_Led;
@@ -632,7 +620,7 @@ namespace ServiceManager.Process
                     }
                     else
                     {
-                        if (selectColor != 3)
+                        if (selecionaCor != 3)
                         {
                             card.Bonus += card.Saldo;
                             corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
@@ -685,9 +673,9 @@ namespace ServiceManager.Process
                     }
                 }
             }
-            else if (card.Status == "FA" && actionTaken == false)
+            else if (card.Status == "FA" && acaoExecutada == false)
             {
-                if (selectColor != 3)
+                if (selecionaCor != 3)
                 {
                     if (SemSaldo)
                     {
@@ -777,7 +765,7 @@ namespace ServiceManager.Process
                         }
                         else
                         {
-                            if (selectColor != 3)
+                            if (selecionaCor != 3)
                             {
                                 corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
                                 corLed += (int)leitora.Tempo_Aciona_Led;
@@ -894,7 +882,7 @@ namespace ServiceManager.Process
                         }
                         else
                         {
-                            if (selectColor != 3)
+                            if (selecionaCor != 3)
                             {
                                 card.Bonus += card.Saldo;
                                 corLed = (int)(Led)Convert.ToInt16(Led.Jog_Sem_Ticket) * 10;
@@ -948,11 +936,11 @@ namespace ServiceManager.Process
                     }
                 }
             }
-            else if (card.Status == "FA" && actionTaken == true)
+            else if (card.Status == "FA" && acaoExecutada == true)
             {
-                if (selectColor != 3)
+                if (selecionaCor != 3)
                 {
-                    if (actionTaken == false)
+                    if (acaoExecutada == false)
                     {
                         corLed = (int)(Led)Convert.ToInt16(Led.Saldo_Insuficiente) * 10;
                         corLed += (int)leitora.Tempo_Aciona_Led;
@@ -1002,7 +990,7 @@ namespace ServiceManager.Process
                         await GerarHistorico(leitoraConfiguracao, card, leitora, isVip);
 
                         msgDisplay = leitora.Mensagem_Sucesso;
-                        msgDisplay2 = displayMessage;
+                        msgDisplay2 = mensagemDisplay;
 
                         Console.Write(dataHora + " - " + "Leitora " + leitora.Code_Leitora + " | Cartão " + leitora.CardCode + " - ");
                         Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -1116,7 +1104,7 @@ namespace ServiceManager.Process
             {
                 msgDisplay = leitora.Display1;
                 msgDisplay2 = " Nao Encontrado ";
-                corLed = (int)(Led)Convert.ToInt16(Led.NaoPisca) * 0;
+                corLed = (int)(Led)Convert.ToInt16(Led.Nao_Pisca) * 0;
                 corLed += (int)leitora.Tempo_Alterna_Led;
 
                 await AtualizarLeitora(leitora.Code_Leitora, msgDisplay, msgDisplay2, corLed, StatusCode.A);
@@ -1135,7 +1123,7 @@ namespace ServiceManager.Process
 
         private async Task<bool> AtualizarDataCartao(string cardCode)
         {
-            string connectionString = pDbVision;
+            string connectionString = pBancoVision;
 
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -1147,7 +1135,7 @@ namespace ServiceManager.Process
                     selectCommand.Parameters.AddWithValue("@cardCode", cardCode);
 
                     var result = await selectCommand.ExecuteScalarAsync();
-                    if (result != null && result != DBNull.Value) // Verifica se não é nulo
+                    if (result != null && result != DBNull.Value) 
                     {
                         DateTime dateDesactive = (DateTime)result;
 
@@ -1188,11 +1176,10 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
-                    // Consulta para pegar o ID da tabela tb_machine_settings
                     using (var command1 = new MySqlCommand(query1, connection))
                     {
                         command1.Parameters.AddWithValue("@codeLeitora", leitora.Code_Leitora);
@@ -1205,7 +1192,6 @@ namespace ServiceManager.Process
                         }
                     }
 
-                    // Consulta para pegar o código do cartão (codigo) da tabela tb_card
                     using (var command2 = new MySqlCommand(query2, connection))
                     {
                         command2.Parameters.AddWithValue("@cardNumber", leitora.CardCode);
@@ -1218,7 +1204,6 @@ namespace ServiceManager.Process
                         }
                     }
 
-                    // Inserir os dados na tabela tb_historico_jogadas com saldo e bônus atualizados
                     using (var insertCommand = new MySqlCommand(insertQuery, connection))
                     {
                         insertCommand.Parameters.AddWithValue("@id", machineSettingsId);
@@ -1241,8 +1226,6 @@ namespace ServiceManager.Process
             }
         }
 
-
-
         private async Task EnviarReleAsync(LeitoraConfiguracaoDM leitoraConfiguracao, LeitoraDM leitora, int num)
         {
             string query = "";
@@ -1250,7 +1233,7 @@ namespace ServiceManager.Process
             try
 
             {
-                using (var connection = new MySqlConnection(pDbLeitoras))
+                using (var connection = new MySqlConnection(pBancoLeitora))
                 {
                     await connection.OpenAsync();
                     query = "UPDATE tb_leitora SET aciona_rele = " + num + " WHERE code_leitora = '" + leitora.Code_Leitora + "'";
@@ -1268,38 +1251,6 @@ namespace ServiceManager.Process
             }
         }
 
-        public async Task VerifVipValue()
-        {
-            string query = "SELECT vip_value FROM tb_config LIMIT 1";
-
-            try
-            {
-                using (var connection = new MySqlConnection(pDbVision))
-                {
-                    await connection.OpenAsync();
-
-                    while (true)
-                    {
-                        using (MySqlCommand command = new MySqlCommand(query, connection))
-                        {
-                            using (MySqlDataReader reader = await command.ExecuteReaderAsync())
-                            {
-                                if (await reader.ReadAsync())
-                                {
-                                    vipValue = reader.GetDecimal("vip_value");
-
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
-        }
-
         private async Task GerarHistorico(LeitoraConfiguracaoDM leitoraConfiguracao, CardDM card, LeitoraDM leitora, bool isVip)
         {
             string query = "";
@@ -1308,7 +1259,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -1402,7 +1353,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbLeitoras))
+                using (var connection = new MySqlConnection(pBancoLeitora))
                 {
 
                     await connection.OpenAsync();
@@ -1427,13 +1378,12 @@ namespace ServiceManager.Process
             string query = "";
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
                     decimal saldoValue = card.Saldo.Value;
                     saldoValue = decimal.Parse(saldoValue.ToString(CultureInfo.InvariantCulture).Replace(',', '.'), CultureInfo.InvariantCulture);
-                    // Tratamento para Bonus
                     decimal bonusValue = card.Bonus.Value;
                     bonusValue = decimal.Parse(bonusValue.ToString(CultureInfo.InvariantCulture).Replace(',', '.'), CultureInfo.InvariantCulture);
 
@@ -1458,7 +1408,7 @@ namespace ServiceManager.Process
             string query = "";
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -1468,7 +1418,7 @@ namespace ServiceManager.Process
                     decimal bonusValue = card.Bonus.Value;
                     bonusValue = decimal.Parse(bonusValue.ToString(CultureInfo.InvariantCulture).Replace(',', '.'), CultureInfo.InvariantCulture);
 
-                    decimal valor = valorPago ?? 0m; // usar 0 se valorPago for null
+                    decimal valor = valorPago ?? 0m; 
 
                     query = string.Format(CultureInfo.InvariantCulture,
                         "UPDATE tb_card SET saldo = {0}, bonus = {1}, total_gasto = total_gasto + {2} WHERE number = '{3}'",
@@ -1492,7 +1442,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbLeitoras))
+                using (var connection = new MySqlConnection(pBancoLeitora))
                 {
                     await connection.OpenAsync();
 
@@ -1519,7 +1469,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbLeitoras))
+                using (var connection = new MySqlConnection(pBancoLeitora))
                 {
                     await connection.OpenAsync();
 
@@ -1539,9 +1489,9 @@ namespace ServiceManager.Process
         }
 
 
-        private async Task Aguardar(int timer)
+        private async Task Aguardar(int tempoEsp)
         {
-            Thread.Sleep(timer * 1000);
+            Thread.Sleep(tempoEsp * 1000);
         }
 
         public async Task ServicoCheckUpdate()
@@ -1550,7 +1500,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -1586,7 +1536,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -1611,7 +1561,7 @@ namespace ServiceManager.Process
 
             try
             {
-                using (var connection = new MySqlConnection(pDbVision))
+                using (var connection = new MySqlConnection(pBancoVision))
                 {
                     await connection.OpenAsync();
 
@@ -1759,7 +1709,7 @@ namespace ServiceManager.Process
                 bool isUpdate = false;
                 string query = "SELECT * FROM tb_leitora WHERE code_leitora = '" + code_leitora + "'";
 
-                using (var connection = new MySqlConnection(pDbLeitoras))
+                using (var connection = new MySqlConnection(pBancoLeitora))
                 {
                     await connection.OpenAsync();
                     using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -1773,7 +1723,7 @@ namespace ServiceManager.Process
                         }
                     }
                 }
-                using (var connection = new MySqlConnection(pDbLeitoras))
+                using (var connection = new MySqlConnection(pBancoLeitora))
                 {
                     await connection.OpenAsync();
                     string ativaString = leitoraConfig.Ativa == 1 ? "1" : "0";
@@ -1808,7 +1758,6 @@ namespace ServiceManager.Process
                             query += "display2 = 'R$" + leitoraConfig.Preco_Normal + " VIP" + leitoraConfig.Preco_Vip + "',";
                         }
 
-                        // Continuação da query...
                         query += "led_base = " + corLed + ","
                         + "ticket_min = " + leitoraConfig.Ticket_Min + ","
                         + "ticket_max = " + leitoraConfig.Ticket_Max + ","
@@ -1846,7 +1795,6 @@ namespace ServiceManager.Process
                             query += "display2 = 'R$" + leitoraConfig.Preco_Normal + " VIP" + leitoraConfig.Preco_Vip + "',";
                         }
 
-                        // Continuação da query...
                         query += "led_base = " + corLed + ","
                         + "ticket_min = " + leitoraConfig.Ticket_Min + ","
                         + "ticket_max = " + leitoraConfig.Ticket_Max + ","

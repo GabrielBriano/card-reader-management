@@ -2,7 +2,7 @@
 {
     public enum Led : short
     {
-        NaoPisca = 00,
+        Nao_Pisca = 00,
         Maq_Normal = 15,
         Cartao_Aceito = 25,
         Maq_Ticket = 35,

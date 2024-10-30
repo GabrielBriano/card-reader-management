@@ -40,7 +40,7 @@ namespace ServiceManager.Process
                     {
                         using (MySqlDataReader reader = await command.ExecuteReaderAsync())
                         {
-                            while (await reader.ReadAsync()) // Use ReadAsync para operação assíncrona
+                            while (await reader.ReadAsync())
                             {
                                 pLeitora = reader.GetString("code_leitora");
 
@@ -73,12 +73,12 @@ namespace ServiceManager.Process
                 
                     using (var connection = new MySqlConnection(pBancoLeitora))
                     {
-                        await connection.OpenAsync(); // Use OpenAsync para operação assíncrona
+                        await connection.OpenAsync(); 
                         using (MySqlCommand command = new MySqlCommand(query, connection))
                         {
-                            using (MySqlDataReader reader = await command.ExecuteReaderAsync()) // Use ExecuteReaderAsync para operação assíncrona
+                            using (MySqlDataReader reader = await command.ExecuteReaderAsync()) 
                             {
-                                if (await reader.ReadAsync()) // Use ReadAsync para operação assíncrona
+                                if (await reader.ReadAsync()) 
                                 {
                                     statusId = reader.GetInt32("checkleitora");
                                 }
@@ -90,7 +90,7 @@ namespace ServiceManager.Process
                         Console.WriteLine("[ Maquina: " + leitora + " - Conectada ]");
                         break;
                     }
-                    await Aguardar(1); // Use await para aguardar de forma assíncrona
+                    await Aguardar(1); 
 
                 }
             
@@ -101,7 +101,7 @@ namespace ServiceManager.Process
             }
             if (statusId == 1)
             {
-               // Console.WriteLine("[ Maquina: " + leitora + " - SEM COMUNICAÇAO ]");
+               Console.WriteLine("[ Maquina: " + leitora + " - SEM COMUNICAÇAO ]");
             }
         }
 

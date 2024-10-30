@@ -61,7 +61,7 @@ namespace ServiceManager.Process
                         string query = "SELECT * FROM tb_leitora WHERE status = @status AND codigo_cartao IS NOT NULL LIMIT 1";
                         using (var command = new MySqlCommand(query, connection))
                         {
-                            command.Parameters.AddWithValue("@status", StatusCode.W); // Para evitar SQL Injection
+                            command.Parameters.AddWithValue("@status", StatusCode.W); 
 
                             using (var reader = command.ExecuteReader())
                             {
@@ -311,7 +311,6 @@ namespace ServiceManager.Process
 
                             leitoraConfig.TemDesc = ((short)(reader.IsDBNull(reader.GetOrdinal("discountid")) ? 0 : reader.GetInt16(reader.GetOrdinal("discountid"))));
                             leitoraConfig.Ativa = reader.GetInt16("ativa");
-                            // Inserir o registro na tabela de destino
                             InserirMaquina(leitoraConfig);
                             totalInsert++;
                         }

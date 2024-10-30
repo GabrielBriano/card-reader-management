@@ -2,10 +2,10 @@
 {
     public enum StatusCode
     {
-        W, // W - wait
-        A, // A - active
-        P, // P - Process
-        E, // E - Error
-        S  // S - Service
+        W, // W - Espera
+        A, // A - Ativo
+        P, // P - Processando
+        E, // E - Erro
+        S  // S - Serviço
     }
 }
