@@ -24,7 +24,6 @@ namespace ServiceManager.Process
 
         public void StartService()
         {
-            AsyncDesconto asyncDesconto = new AsyncDesconto();
             AsyncCheckConnection asyncCheckProcess = new AsyncCheckConnection();
             AsyncProcess asyncProcess = new AsyncProcess();
             if (LimpezaDaTabela()) 
@@ -38,9 +37,6 @@ namespace ServiceManager.Process
 
                     asyncCheckProcess.ServicoComunicacao();
                     Console.WriteLine("Serviço de Verificação de Comunicação Iniciado...");
-
-                    asyncDesconto.ServicoDesconto();
-                    Console.WriteLine("Serviço de Verificação de Desconto Iniciado...");
 
                     StartCheckService();
                 }
